@@ -409,10 +409,10 @@ async function codeToDiagram() {
         links.push(link);
       }
     }
-    elementsAndLinks = createdElements.concat(links);
-    graph.resetCells(elementsAndLinks);
-    joint.layout.DirectedGraph.layout(elementsAndLinks, {
-      setLinkVertices: false,
-    });
+    // elementsAndLinks = createdElements.concat(links);
+    // graph.resetCells(elementsAndLinks);
+    // joint.layout.DirectedGraph.layout(elementsAndLinks, {
+    //   setLinkVertices: false,
+    // });
   }
 }

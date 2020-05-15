@@ -505,14 +505,12 @@ async function diagramToCode() {
 }
 
 async function codeToDiagram() {
-  console.log("hi");
   let res = await axios({
     method: "POST",
     url: "http://localhost:5000/process/codeToDiagram",
     data: { hamadaTany: document.getElementById("myCode").value }
   });
   let diagrams = res.data;
-  console.log(diagrams);
   let kHeads = diagrams[0].split("-");
   let rHeads = diagrams[1].split("-");
   let Guards = diagrams[2].split("-");
@@ -530,7 +528,6 @@ async function codeToDiagram() {
     let body = Bodies[i];
 
     if (guard.trim() != "Null") {
-      console.log("GUARD!");
       createdGuard = new Polygon()
         .position(250, 250)
         .size(120, 50)
@@ -599,6 +596,11 @@ async function codeToDiagram() {
         links.push(link);
       }
     }
+    // elementsAndLinks = createdElements.concat(links);
+    // graph.resetCells(elementsAndLinks);
+    // joint.layout.DirectedGraph.layout(elementsAndLinks, {
+    //   setLinkVertices: false,
+    // });
   }
 }
 
