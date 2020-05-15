@@ -1,16 +1,12 @@
-// let axios = require("../node_modules/axios/dist/axios");
+let axios = require("axios");
 let joint = require("jointjs");
 let lodash = require("lodash");
 let backbone = require("backbone");
 let jquery = require("jquery");
-let point = joint.g.Point(3, 4);
-console.log(point);
-//import joint from "./node_modules/jointjs/dist/jointjs";
 
-var createdElements = []; //push/pop
-var links = [];
-var elementsAndLinks = [];
-
+let createdElements = []; //push/pop
+let links = [];
+let elementsAndLinks = [];
 
 var graph = new joint.dia.Graph();
 
@@ -26,14 +22,19 @@ var paper = new joint.dia.Paper({
   },
 });
 
-var button = document.getElementById("KH-button"); // add id="my-button" into html
-button.addEventListener("click", keptHead);
-var button = document.getElementById("RH-button"); // add id="my-button" into html
-button.addEventListener("click", removedHead);
-var button = document.getElementById("GR-button"); // add id="my-button" into html
-button.addEventListener("click", guard);
-var button = document.getElementById("BD-button"); // add id="my-button" into html
-button.addEventListener("click", bodyFun);
+// HTML components
+let button1 = document.getElementById("KH-button");
+button1.addEventListener("click", keptHead);
+let button2 = document.getElementById("RH-button");
+button2.addEventListener("click", removedHead);
+let button3 = document.getElementById("GR-button");
+button3.addEventListener("click", guard);
+let button4 = document.getElementById("BD-button");
+button4.addEventListener("click", bodyFun);
+let button5 = document.getElementById("diagram-code");
+button5.addEventListener("click", diagramToCode);
+var button6 = document.getElementById("code_diagram");
+button6.addEventListener("click", codeToDiagram);
 
 //-------HEAD----------------
 var Circle = joint.dia.Element.define(
@@ -49,6 +50,7 @@ var Circle = joint.dia.Element.define(
       },
       label: {
         text: "Head",
+        type: "circle",
         textVerticalAnchor: "middle",
         textAnchor: "middle",
         fontSize: 14,
@@ -77,12 +79,14 @@ var Polygon = joint.dia.Element.define(
     attrs: {
       body: {
         points: "60,0 0,40 60,80 120,40",
+        type: "guard",
         strokeWidth: 1,
         stroke: "#000000",
         fill: "#8080FF",
       },
       label: {
         text: "Guard",
+
         x: 60,
         y: 40,
         textVerticalAnchor: "middle",
@@ -113,6 +117,7 @@ var Rectangle = joint.dia.Element.define(
     attrs: {
       body: {
         points: "60,0 0,40 60,80 120,40",
+        type: "body",
         strokeWidth: 1,
         stroke: "#000000",
         x: 0,
@@ -124,6 +129,7 @@ var Rectangle = joint.dia.Element.define(
       },
       label: {
         text: "Body",
+
         textVerticalAnchor: "middle",
         textAnchor: "middle",
         fontSize: 14,
@@ -177,6 +183,7 @@ function guard() {
     new Polygon()
       .position(250, 250)
       .size(120, 50)
+      .attr("label/type", "guard")
       .attr("label/text", guardName)
       .addTo(graph)
   );
@@ -185,7 +192,7 @@ function guard() {
 function bodyFun() {
   var bodyName = prompt("Body Input");
   createdElements.push(
-    new Rectangle().position(250, 250).attr("label/text", bodyName).addTo(graph)
+    new Rectangle().position(250, 250).attr("label/text", bodyName).attr("label/type", "body").addTo(graph)
   );
 }
 
@@ -196,7 +203,7 @@ paper.on({
   },
 
   "element:pointerup": function (elementView, evt, x, y) {
-    var coordinates = new g.Point(x, y);
+    var coordinates = new joint.g.Point(x, y);
     var elementAbove = elementView.model;
     var elementBelow = this.model
       .findModelsFromPoint(coordinates)
@@ -244,7 +251,7 @@ paper.on({
   },
 
   "element:pointerup": function (elementView, evt, x, y) {
-    var coordinates = new g.Point(x, y);
+    var coordinates = new joint.g.Point(x, y);
     var elementAbove = elementView.model;
     var elementBelow = this.model
       .findModelsFromPoint(coordinates)
@@ -288,6 +295,124 @@ paper.on({
   },
 });
 
-// function diagramToCode() {
-//   axios.get("http://localhost:5000");
-// }
+async function diagramToCode() {
+  let sentString = "";
+  for (let i = 0; i < createdElements.length; i++) {
+    let element = createdElements[i];
+    let shapeType = element.attr("body/type");
+    let shapeText = element.attr("label/text");
+    sentString += shapeType + "," + shapeText
+    if (i != createdElements.length - 1)
+      sentString += ".";
+  }
+
+  let code = await axios({
+    method: "POST",
+    url: "http://localhost:5000/process/diagramToCode",
+    data: { hamada: sentString }
+  });
+  console.log("1");
+  console.log(code.data);
+  document.getElementById("myCode").value = code.data;
+
+}
+
+async function codeToDiagram() {
+  let res = await axios({
+    method: "POST",
+    url: "http://localhost:5000/process/codeToDiagram",
+    data: { hamadaTany: document.getElementById("myCode").value }
+  });
+  let diagrams = res.data;
+  let kHeads = diagrams[0].split("-");
+  let rHeads = diagrams[1].split("-");
+  let Guards = diagrams[2].split("-");
+  let Bodies = diagrams[3].split("-");
+
+  let createdHead = "";
+  let createdGuard = "";
+  let createdRemovedHead = "";
+  let createdBody = "";
+
+  for (let i = 0; i < kHeads.length; i++) {
+    let keptHeadArr = kHeads[i].split(",");
+    let removedHeadArr = rHeads[i].split(",");
+    let guard = Guards[i];
+    let body = Bodies[i];
+
+    if (guard.trim() != "Null") {
+      createdGuard = new Polygon()
+        .position(250, 250)
+        .size(120, 50)
+        .attr("label/text", guard)
+        .addTo(graph);
+      createdElements.push(createdGuard);
+    }
+
+    if (body.trim() != "Null") {
+      createdBody = new Rectangle()
+        .position(250, 250)
+        .attr("label/text", body)
+        .addTo(graph);
+
+      createdElements.push(createdBody);
+      let link = new joint.dia.Link({
+        source: createdBody,
+        target: createdGuard,
+        attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
+      });
+      link.addTo(graph);
+      links.push(link);
+    }
+
+    for (let j = 0; j < keptHeadArr.length; j++) {
+      let kHeadName = keptHeadArr[j];
+      if (kHeadName.trim() != "Null") {
+        createdHead = new Circle()
+          .position(250, 250)
+          .size(120, 50)
+          .attr("label/text", kHeadName)
+          .attr("body/fill", "#177bec")
+          .attr("body/type", "kept")
+          .addTo(graph);
+
+        createdElements.push(createdHead);
+        let link = new joint.dia.Link({
+          source: createdHead,
+          target: createdGuard,
+          attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
+        });
+        link.addTo(graph);
+        links.push(link);
+      }
+    }
+
+    for (let j = 0; j < removedHeadArr.length; j++) {
+      let rHeadName = removedHeadArr[j];
+      if (rHeadName.trim() != "Null") {
+        createdRemovedHead = new Circle()
+          .position(350, 350)
+          .size(120, 50)
+          .attr("label/text", rHeadName)
+          .attr("body/fill", "#FF0000")
+          .attr("body/type", "removed")
+          .addTo(graph);
+
+        createdElements.push(createdRemovedHead);
+
+        let link = new joint.dia.Link({
+          source: createdRemovedHead,
+          target: createdGuard,
+          attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
+        });
+        link.addTo(graph);
+        links.push(link);
+      }
+    }
+    elementsAndLinks = createdElements.concat(links);
+    graph.resetCells(elementsAndLinks);
+    joint.layout.DirectedGraph.layout(elementsAndLinks, {
+      setLinkVertices: false,
+    });
+  }
+}
