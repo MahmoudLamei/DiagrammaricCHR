@@ -100,31 +100,10 @@ router.post("/codeToDiagram", async (req, res) => {
 
     if (guard.trim() != "Null") {
       createdGuard += guard.trim();
-
-      // let createdGurad = new Polygon()
-      //   .position(250, 250)
-      //   .size(120, 50)
-      //   .attr("label/text", guard)
-      //   .addTo(graph);
-      // createdElements.push(createdGurad);
     }
     else createdGuard += "Null";
     if (body.trim() != "Null") {
       createdBody += body.trim();
-
-      // let createdBody = new Rectangle()
-      //   .position(250, 250)
-      //   .attr("label/text", body)
-      //   .addTo(graph);
-
-      // createdElements.push(createdBody);
-      // let link = new joint.dia.Link({
-      //   source: createdBody,
-      //   target: createdGurad,
-      //   attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
-      // });
-      // link.addTo(graph);
-      // links.push(link);
     } else createdBody += "Null";
     for (let j = 0; j < keptHeadArr.length; j++) {
       const kHeadName = keptHeadArr[j];
@@ -132,22 +111,6 @@ router.post("/codeToDiagram", async (req, res) => {
         createdHead += kHeadName.trim();
         if (j != keptHeadArr.length - 1 && keptHeadArr.length != 1)
           createdHead += ",";
-        // let createdHead = new Circle()
-        //   .position(250, 250)
-        //   .size(120, 50)
-        //   .attr("label/text", kHeadName)
-        //   .attr("body/fill", "#177bec")
-        //   .attr("body/type", "kept")
-        //   .addTo(graph);
-
-        // createdElements.push(createdHead);
-        // let link = new joint.dia.Link({
-        //   source: createdHead,
-        //   target: createdGurad,
-        //   attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
-        // });
-        // link.addTo(graph);
-        // links.push(link);
       } else createdHead += "Null";
     }
 
@@ -157,25 +120,6 @@ router.post("/codeToDiagram", async (req, res) => {
         createdRemovedHead += rHeadName.trim();
         if (j != removedHeadArr.length - 1 && removedHeadArr.length != 1)
           createdRemovedHead += ",";
-
-
-        // let createdRemovedHead = new Circle()
-        //   .position(350, 350)
-        //   .size(120, 50)
-        //   .attr("label/text", rHeadName)
-        //   .attr("body/fill", "#FF0000")
-        //   .attr("body/type", "removed")
-        //   .addTo(graph);
-
-        // createdElements.push(createdRemovedHead);
-
-        // let link = new joint.dia.Link({
-        //   source: createdRemovedHead,
-        //   target: createdGurad,
-        //   attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
-        // });
-        // link.addTo(graph);
-        // links.push(link);
       } else createdRemovedHead += "Null";
     }
     if (i != codeArray.length - 1 && codeArray.length != 1) {
@@ -185,11 +129,7 @@ router.post("/codeToDiagram", async (req, res) => {
       createdHead += "-";
     }
   }
-  // elementsAndLinks = createdElements.concat(links);
-  // graph.resetCells(elementsAndLinks);
-  // joint.layout.DirectedGraph.layout(elementsAndLinks, {
-  //   setLinkVertices: false,
-  // });
+
   let diagrams = [];
   diagrams.push(createdHead);
   diagrams.push(createdRemovedHead);
