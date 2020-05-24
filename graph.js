@@ -1,5 +1,8 @@
+var d3 = require("d3");
+let graphlib = require("graphlib");
+let dagre = require("dagre");
 let axios = require("axios");
-let joint = require("jointjs");
+let joint = require("jointjs")
 let lodash = require("lodash");
 let backbone = require("backbone");
 let jquery = require("jquery");
@@ -21,6 +24,22 @@ var paper = new joint.dia.Paper({
     color: "rgba(0, 0, 0, 0.3)",
   },
 });
+
+// var paperScroller = new joint.ui.PaperScroller({
+//   paper: paper
+// });
+
+// $('#paper-container').append(paperScroller.render().el);
+
+// var nav = new joint.ui.Navigator({
+//   paperScroller: paperScroller,
+//   width: 300,
+//   height: 200,
+//   padding: 10,
+//   zoomOptions: { max: 2, min: 0.2 }
+// });
+// nav.$el.appendTo('#navigator');
+// nav.render();
 
 // HTML components
 let button1 = document.getElementById("KH-button");
@@ -324,17 +343,17 @@ async function codeToDiagram() {
     data: { hamadaTany: document.getElementById("myCode").value }
   });
   let diagrams = res.data;
+  console.log(diagrams);
   let kHeads = diagrams[0].split("-");
   let rHeads = diagrams[1].split("-");
   let Guards = diagrams[2].split("-");
   let Bodies = diagrams[3].split("-");
 
-  let createdHead = "";
-  let createdGuard = "";
-  let createdRemovedHead = "";
-  let createdBody = "";
-
-  for (let i = 0; i < kHeads.length; i++) {
+  for (let i = 0; i < Guards.length; i++) {
+    let createdHead = "";
+    let createdGuard = "";
+    let createdRemovedHead = "";
+    let createdBody = "";
     let keptHeadArr = kHeads[i].split(",");
     let removedHeadArr = rHeads[i].split(",");
     let guard = Guards[i];
@@ -409,10 +428,16 @@ async function codeToDiagram() {
         links.push(link);
       }
     }
-    // elementsAndLinks = createdElements.concat(links);
-    // graph.resetCells(elementsAndLinks);
-    // joint.layout.DirectedGraph.layout(elementsAndLinks, {
-    //   setLinkVertices: false,
-    // });
+    // <Layout
+    var graphBBox = joint.layout.DirectedGraph.layout(graph, {
+      dagre: dagre,
+      graphlib: graphlib,
+      nodeSep: 80,
+      edgeSep: 140,
+      rankDir: "LR"
+    });
+    // Layout/>
   }
 }
+
+//browserify graph.js -o bundle.js

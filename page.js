@@ -1,8 +1,6 @@
 const express = require("express");
 let joint = require("jointjs");
 let bodyParser = require("body-parser");
-let dagre = require("dagre");
-let graphlib = require("graphlib");
 const router = express.Router();
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -68,34 +66,34 @@ router.post("/diagramToCode", async (req, res) => {
     removedHeadStr = removedHeadStr.slice(0, removedHeadStr.length - 2);
   code =
     keptHeadStr +
-    " \\\\ " +
+    " \\ " +
     removedHeadStr +
     " <==> " +
     guardStr +
     " | " +
-    bodyStr;
+    bodyStr +
+    ".";
 
   res.send(code);
 });
 
 
 router.post("/codeToDiagram", async (req, res) => {
-
-  // var inCode =
-  //   "kHead1, kHead2 \\\\ rHead1, rHead2 <==> Guard1, Guard2 | Body1, Body2";
+  //   "kHead1, kHead2 \\ rHead1, rHead2 <==> Guard1, Guard2 | Body1, Body2";
   let codeArray = req.body.hamadaTany.split("\n");
   let createdHead = "";
   let createdGuard = "";
   let createdRemovedHead = "";
   let createdBody = "";
   for (let i = 0; i < codeArray.length; i++) {
-    let inCode2 = codeArray[i].split("\\\\"); // First split to get the kept heads.
+    let inCode2 = codeArray[i].split("\\"); // First split to get the kept heads.
     let keptHeadArr = inCode2[0].split(",");
     let inCode3 = inCode2[1].split("<==>"); // Second split to get the removed heads.
     let removedHeadArr = inCode3[0].split(",");
     let inCode4 = inCode3[1].split("|"); // Third split to get the Guard and Body.
     let guard = inCode4[0];
-    let body = inCode4[1];
+    let bodyWP = inCode4[1];
+    let body = bodyWP.substring(0, bodyWP.length - 1);
 
 
     if (guard.trim() != "Null") {
