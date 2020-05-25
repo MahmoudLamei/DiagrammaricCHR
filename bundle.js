@@ -535,16 +535,19 @@ async function codeToDiagram() {
   let rHeads = diagrams[1].split("-");
   let Guards = diagrams[2].split("-");
   let Bodies = diagrams[3].split("-");
+  console.log(kHeads);
 
   for (let i = 0; i < Guards.length; i++) {
     let createdHead = "";
     let createdGuard = "";
     let createdRemovedHead = "";
     let createdBody = "";
-    let keptHeadArr = kHeads[i].split(",");
-    let removedHeadArr = rHeads[i].split(",");
+    let keptHead = kHeads[i];
+    let removedHead = rHeads[i];
     let guard = Guards[i];
     let body = Bodies[i];
+    let keptHeadArr = [];
+    let removedHeadArr = [];
 
     if (guard.trim() != "Null") {
       createdGuard = new Polygon()
@@ -569,6 +572,28 @@ async function codeToDiagram() {
       });
       link.addTo(graph);
       links.push(link);
+    }
+
+    let bracketOpen = false;
+    //color(X,M), color(Y)
+    for (let i = 0; i < keptHead.length; i++) {
+      const chr = keptHead.charAt(i);
+      if (chr == '(')
+        bracketOpen = true;
+
+      if (bracketOpen == false) {
+        if (chr == ',') {
+          let part = keptHead.substring(0, i);
+          keptHeadArr.push(part);
+          keptHead = keptHead.substring(i + 1, keptHead.length);
+          i = 0;
+        }
+      }
+      if (chr == ')')
+        bracketOpen = false;
+
+      if (keptHead.trim() != "" && i == keptHead.length - 1)
+        keptHeadArr.push(keptHead);
     }
 
     for (let j = 0; j < keptHeadArr.length; j++) {
