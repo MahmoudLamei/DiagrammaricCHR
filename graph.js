@@ -1,45 +1,28 @@
-var d3 = require("d3");
-let graphlib = require("graphlib");
-let dagre = require("dagre");
-let axios = require("axios");
-let joint = require("jointjs")
-let lodash = require("lodash");
-let backbone = require("backbone");
-let jquery = require("jquery");
+const d3 = require("d3");
+const graphlib = require("graphlib");
+const dagre = require("dagre");
+const axios = require("axios");
+const joint = require("jointjs")
+const lodash = require("lodash");
+const backbone = require("backbone");
+const jquery = require("jquery");
 
-let createdElements = []; //push/pop
+let createdElements = [];
 let links = [];
-let elementsAndLinks = [];
+let divided = [];
 
 var graph = new joint.dia.Graph();
-
 var paper = new joint.dia.Paper({
   el: document.getElementById("myholder"),
   model: graph,
   width: 1000,
-  height: 1000,
+  height: 1060,
   gridSize: 10,
   drawGrid: true,
   background: {
     color: "rgba(0, 0, 0, 0.3)",
   },
 });
-
-// var paperScroller = new joint.ui.PaperScroller({
-//   paper: paper
-// });
-
-// $('#paper-container').append(paperScroller.render().el);
-
-// var nav = new joint.ui.Navigator({
-//   paperScroller: paperScroller,
-//   width: 300,
-//   height: 200,
-//   padding: 10,
-//   zoomOptions: { max: 2, min: 0.2 }
-// });
-// nav.$el.appendTo('#navigator');
-// nav.render();
 
 // HTML components
 let button1 = document.getElementById("KH-button");
@@ -54,6 +37,7 @@ let button5 = document.getElementById("diagram-code");
 button5.addEventListener("click", diagramToCode);
 var button6 = document.getElementById("code_diagram");
 button6.addEventListener("click", codeToDiagram);
+
 
 //-------HEAD----------------
 var Circle = joint.dia.Element.define(
@@ -315,23 +299,69 @@ paper.on({
 });
 
 async function diagramToCode() {
+  // get all the guards and put them in the heads of the 2D array (divided)
   let sentString = "";
-  for (let i = 0; i < createdElements.length; i++) {
-    let element = createdElements[i];
-    let shapeType = element.attr("body/type");
-    let shapeText = element.attr("label/text");
-    sentString += shapeType + "," + shapeText
-    if (i != createdElements.length - 1)
-      sentString += ".";
+  let elementsTemp = createdElements;
+  for (let i = 0; i < elementsTemp.length; i++) {
+    let element = elementsTemp[i];
+    if (element.attr("body/type") == "guard") {
+      divided.push([element]);
+      //let indx = elementsTemp.indexOf(element);
+    }
   }
+
+  //divide the connected shapes in a 2D array (divided)
+  for (let i = 0; i < divided.length; i++) {
+    let guard2 = divided[i][0];
+    for (let j = 0; j < createdElements.length; j++) {
+      let element = createdElements[j];
+      for (let k = 0; k < links.length; k++) {
+        let link = links[k];
+        if ((link.prop('source/id') == guard2.id && link.prop('target/id') == element.id) ||
+          (link.prop('source/id') == element.id && link.prop('target/id') == guard2.id)) {
+          divided[i].push(element);
+        }
+      }
+    }
+  }
+
+  //divide the connected shapes in a string (divide)
+  for (let i = 0; i < divided.length; i++) {
+    let elements = divided[i];
+    for (let j = 0; j < elements.length; j++) {
+      let element = elements[j];
+      let shapeType = element.attr("body/type");
+      let shapeText = element.attr("label/text");
+      sentString += shapeType + "," + shapeText
+      if (i != createdElements.length - 1)
+        sentString += ".";
+    }
+    if (i != divided.length - 1)
+      sentString += "é";
+  }
+
+  // Printing divided.
+  let log = "";
+  for (let i = 0; i < divided.length; i++) {
+    const element = divided[i];
+    log += "[";
+    for (let j = 0; j < element.length; j++) {
+      const subElement = element[j];
+      log += subElement.attr("label/text");
+      if (i != subElement.length - 1)
+        log += ", ";
+    }
+    log += "]";
+    if (i != element.length - 1)
+      log += ", ";
+  }
+  console.log("divided: \n" + log);
 
   let code = await axios({
     method: "POST",
     url: "http://localhost:5000/process/diagramToCode",
-    data: { hamada: sentString }
-  });
-  console.log("1");
-  console.log(code.data);
+    data: { sentString: sentString }
+  })
   document.getElementById("myCode").value = code.data;
 
 }
@@ -340,7 +370,7 @@ async function codeToDiagram() {
   let res = await axios({
     method: "POST",
     url: "http://localhost:5000/process/codeToDiagram",
-    data: { hamadaTany: document.getElementById("myCode").value }
+    data: { codeString: document.getElementById("myCode").value }
   });
   let diagrams = res.data;
   console.log(diagrams);
@@ -348,7 +378,6 @@ async function codeToDiagram() {
   let rHeads = diagrams[1].split("-");
   let Guards = diagrams[2].split("-");
   let Bodies = diagrams[3].split("-");
-  console.log(kHeads);
 
   for (let i = 0; i < Guards.length; i++) {
     let createdHead = "";
@@ -388,7 +417,6 @@ async function codeToDiagram() {
     }
 
     let bracketOpen = false;
-    //color(X,M), color(Y)
     for (let i = 0; i < keptHead.length; i++) {
       const chr = keptHead.charAt(i);
       if (chr == '(')
@@ -407,6 +435,27 @@ async function codeToDiagram() {
 
       if (keptHead.trim() != "" && i == keptHead.length - 1)
         keptHeadArr.push(keptHead);
+    }
+
+    bracketOpen = false;
+    for (let i = 0; i < removedHead.length; i++) {
+      const chr = removedHead.charAt(i);
+      if (chr == '(')
+        bracketOpen = true;
+
+      if (bracketOpen == false) {
+        if (chr == ',') {
+          let part = removedHead.substring(0, i);
+          removedHeadArr.push(part);
+          removedHead = removedHead.substring(i + 1, removedHead.length);
+          i = 0;
+        }
+      }
+      if (chr == ')')
+        bracketOpen = false;
+
+      if (removedHead.trim() != "" && i == removedHead.length - 1)
+        removedHeadArr.push(removedHead);
     }
 
     for (let j = 0; j < keptHeadArr.length; j++) {
@@ -465,4 +514,18 @@ async function codeToDiagram() {
   }
 }
 
+document.getElementById("runQuery1").addEventListener("click", runQuery);
+
+async function runQuery() {
+  console.log("in runQuery");
+  let query = await axios({
+    method: "POST",
+    url: "http://localhost:5000/process/runQuery",
+    data: {
+      sentQuery: document.getElementById("queryArea").value,
+      codeString: document.getElementById("myCode").value
+    }
+  });
+  document.getElementById("resultArea").value = query.data;
+}
 //browserify graph.js -o bundle.js

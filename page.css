@@ -38,6 +38,8 @@ body {
   margin-left: 50px;
 }
 
+
+
 #main {
   transition: margin-left 0.5s;
   padding: 16px;
@@ -64,4 +66,32 @@ body {
 
 textarea {
   font-size: 18px;
+}
+
+button {
+  padding: 10px;
+  color: white;
+  background-color: #009578;
+  border: 1px solid #000;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #00b28f;
+}
+
+#custom-text {
+  margin-left: 10px;
+  font-family: sans-serif;
+  color: #aaa;
+}
+
+textarea {
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  resize: none;
 }
