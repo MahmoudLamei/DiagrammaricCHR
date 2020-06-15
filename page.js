@@ -281,14 +281,7 @@ router.post("/codeToDiagram", async (req, res) => {
   res.send(diagrams);
 });
 
-// let res2 = "";
-// let callbackStr = true;
-// function postQuery(str) {
-//   res2 += str + "\n";
-//   if (str == false)
-//     callbackStr = false;
-// }
-
+// Load the code from the .pl file.
 router.post('/loadChr', (req, res) => {
   var code = req.body.code;
 
@@ -302,7 +295,7 @@ router.post('/loadChr', (req, res) => {
   res.send(code)
 })
 
-//execute query and save result in txt file
+// Execute query and save result in .txt file.
 router.post('/executeChr', (req, res) => {
   console.log(req.body.query);
   fs.writeFile('queryResult.txt', "The query is not executed try again", err => {
@@ -354,7 +347,7 @@ router.post('/executeChr', (req, res) => {
   res.send("done");
 })
 
-//get result of query
+// Get result of query.
 router.get('/getChrRes', (req, res) => {
   fs.readFile("queryResult.txt", function (err, buf) {
     if (err) res.send("error", err);
@@ -363,7 +356,5 @@ router.get('/getChrRes', (req, res) => {
     }
   });
 })
-
-
 
 module.exports = router;

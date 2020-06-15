@@ -514,7 +514,6 @@ async function codeToDiagram() {
 }
 
 document.getElementById("runQuery").addEventListener("click", loadChr);
-
 async function loadChr() {
   await axios({
     method: "POST",

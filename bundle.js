@@ -701,9 +701,7 @@ async function codeToDiagram() {
 }
 
 document.getElementById("runQuery").addEventListener("click", loadChr);
-
 async function loadChr() {
-  console.log("in loadChr");
   await axios({
     method: "POST",
     url: "http://localhost:5000/process/loadCHR",
@@ -715,7 +713,6 @@ async function loadChr() {
 }
 
 async function executeChr() {
-  // console.log("in executeChr");
   await axios({
     method: "POST",
     url: "http://localhost:5000/process/executeChr",
@@ -727,13 +724,10 @@ async function executeChr() {
 }
 
 async function getChrRes() {
-  // console.log("begin getChrRes");
   let result = await axios({
     method: "GET",
     url: "http://localhost:5000/process/getChrRes",
   });
-  // console.log("end getChrRes");
-  console.log(result);
   document.getElementById("resultArea").value = result.data;
 }
 //browserify graph.js -o bundle.js
