@@ -35,9 +35,8 @@ let button4 = document.getElementById("BD-button");
 button4.addEventListener("click", bodyFun);
 let button5 = document.getElementById("diagram-code");
 button5.addEventListener("click", diagramToCode);
-var button6 = document.getElementById("code_diagram");
+let button6 = document.getElementById("code_diagram");
 button6.addEventListener("click", codeToDiagram);
-
 
 //-------HEAD----------------
 var Circle = joint.dia.Element.define(
@@ -514,18 +513,35 @@ async function codeToDiagram() {
   }
 }
 
-document.getElementById("runQuery1").addEventListener("click", runQuery);
+document.getElementById("runQuery").addEventListener("click", loadChr);
 
-async function runQuery() {
-  console.log("in runQuery");
-  let query = await axios({
+async function loadChr() {
+  await axios({
     method: "POST",
-    url: "http://localhost:5000/process/runQuery",
+    url: "http://localhost:5000/process/loadCHR",
     data: {
-      sentQuery: document.getElementById("queryArea").value,
-      codeString: document.getElementById("myCode").value
+      code: document.getElementById("myCode").value
     }
   });
-  document.getElementById("resultArea").value = query.data;
+  executeChr();
+}
+
+async function executeChr() {
+  await axios({
+    method: "POST",
+    url: "http://localhost:5000/process/executeChr",
+    data: {
+      query: document.getElementById("queryArea").value
+    }
+  });
+  setTimeout(getChrRes, 1000);
+}
+
+async function getChrRes() {
+  let result = await axios({
+    method: "GET",
+    url: "http://localhost:5000/process/getChrRes",
+  });
+  document.getElementById("resultArea").value = result.data;
 }
 //browserify graph.js -o bundle.js

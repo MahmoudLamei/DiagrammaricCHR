@@ -37,6 +37,7 @@
     "mocha": "^7.2.0",
     "mongoose": "^5.9.13",
     "najax": "^1.0.4",
+    "node-cmd": "^3.0.0",
     "pengines": "^2.0.0",
     "puppeteer": "^3.1.0",
     "request": "^2.88.2",

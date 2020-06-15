@@ -6,6 +6,7 @@ const CHR = require('chr');
 const pl = require('tau-prolog');
 const router = express.Router();
 const fs = require('fs');
+const cmd = require('node-cmd');
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 
@@ -288,22 +289,81 @@ router.post("/codeToDiagram", async (req, res) => {
 //     callbackStr = false;
 // }
 
-router.post("/runQuery", async (req, res) => {
+router.post('/loadChr', (req, res) => {
+  var code = req.body.code;
+
+  fs.writeFile('code.pl', code, err => { // chrFiles/main.pl
+    if (err) {
+      console.error(err)
+      return
+    }
+  })
+
+  res.send(code)
+})
+
+//execute query and save result in txt file
+router.post('/executeChr', (req, res) => {
+  console.log(req.body.query);
+  fs.writeFile('queryResult.txt', "The query is not executed try again", err => {
+    if (err) {
+      console.error(err)
+      return
+    }
+  })
 
 
-  // res2 = "";
-  // let session = pl.create();
-  // let call = postQuery;
-  // let query = req.body.sentQuery;
-  // session.consult(req.body.codeString);
-  // session.query(query);
-  // while (callbackStr == true) {
-  //   session.answer(call);
-  // }
-  // res.send(res2);
-  // res2 = "";
-  // callbackStr = true;
-});
+  const processRef = cmd.get('swipl code.pl');
+  let data_line = '';
+
+  var query = req.body.query + "\n";
+
+  var or = `;`;
+  var and = `.`;
+
+  processRef.stdin.write(query);
+
+  processRef.stdout.on(
+    'data',
+    function (data) {
+      var x = data.split("\n")
+      data_line += data;
+      if (x.length > 1) {
+
+        fs.writeFile('queryResult.txt', data_line, function (err, data) {
+          if (err) {
+            return console.log(err);
+          }
+        }
+        );
+      }
+      else {
+        if (data_line.length <= 100000) {
+          processRef.stdin.write(or);
+        }
+        else {
+          console.log("exeeds limit");
+
+          processRef.stdin.write(and);
+          alert("this is only part of the solutions as there are too many possible solutions !!")
+
+        }
+      }
+    }
+  );
+  res.send("done");
+})
+
+//get result of query
+router.get('/getChrRes', (req, res) => {
+  fs.readFile("queryResult.txt", function (err, buf) {
+    if (err) res.send("error", err);
+    else {
+      res.send(buf.toString().replace('Content-type: text/html; charset=UTF-8', ''));
+    }
+  });
+})
+
 
 
 module.exports = router;
