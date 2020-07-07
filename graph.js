@@ -6,6 +6,7 @@ const joint = require("jointjs")
 const lodash = require("lodash");
 const backbone = require("backbone");
 const jquery = require("jquery");
+const { countBy } = require("lodash");
 
 let createdElements = [];
 let links = [];
@@ -23,20 +24,6 @@ var paper = new joint.dia.Paper({
     color: "rgba(0, 0, 0, 0.3)",
   },
 });
-
-// HTML components
-let button1 = document.getElementById("KH-button");
-button1.addEventListener("click", keptHead);
-let button2 = document.getElementById("RH-button");
-button2.addEventListener("click", removedHead);
-let button3 = document.getElementById("GR-button");
-button3.addEventListener("click", guard);
-let button4 = document.getElementById("BD-button");
-button4.addEventListener("click", bodyFun);
-let button5 = document.getElementById("diagram-code");
-button5.addEventListener("click", diagramToCode);
-let button6 = document.getElementById("code_diagram");
-button6.addEventListener("click", codeToDiagram);
 
 //-------HEAD----------------
 var Circle = joint.dia.Element.define(
@@ -154,6 +141,7 @@ var Rectangle = joint.dia.Element.define(
   }
 );
 
+document.getElementById("KH_button").addEventListener("click", keptHead);
 function keptHead() {
   var kHeadName = prompt("Kept Head Input");
   var kHead = new Circle()
@@ -166,6 +154,7 @@ function keptHead() {
   createdElements.push(kHead);
 }
 
+document.getElementById("RH_button").addEventListener("click", removedHead);
 function removedHead() {
   var rHeadName = prompt("Removed Head Input");
   createdElements.push(
@@ -179,6 +168,7 @@ function removedHead() {
   );
 }
 
+document.getElementById("GR_button").addEventListener("click", guard);
 function guard() {
   var guardName = prompt("Guard Input");
   createdElements.push(
@@ -191,6 +181,7 @@ function guard() {
   );
 }
 
+document.getElementById("BD_button").addEventListener("click", bodyFun);
 function bodyFun() {
   var bodyName = prompt("Body Input");
   createdElements.push(
@@ -237,93 +228,91 @@ paper.on({
         tools: [new joint.linkTools.Vertices(), new joint.linkTools.Remove()],
       });
       link.findView(this).addTools(tools);
-    }
 
-    if (
-      elementBelow &&
-      graph.isNeighbor(elementBelow, elementAbove, { deep: true })
-    ) {
-      const { x, y } = evt.data.startPosition;
-      elementAbove.position(x, y);
-    }
-  },
-  "element:pointerdown": function (elementView, evt) {
-    //evt.data = elementView.model.position();
-    evt.data = { startPosition: elementView.model.position() };
-  },
+      // Dividing the elements to groups.
+      let countAbove = -1;
+      let countBelow = -1;
+      // console.log("1\n");
+      // printDivided();
+      if (divided.length == 0) {
+        divided.push([elementAbove, elementBelow]);
+      }
+      // console.log("2\n");
+      // printDivided();
+      for (let i = 0; i < divided.length; i++) {
+        const group = divided[i];
 
-  "element:pointerup": function (elementView, evt, x, y) {
-    var coordinates = new joint.g.Point(x, y);
-    var elementAbove = elementView.model;
-    var elementBelow = this.model
-      .findModelsFromPoint(coordinates)
-      .find(function (el) {
-        return el.id !== elementAbove.id;
-      });
+        for (let j = 0; j < group.length; j++) {
+          const element = group[j];
 
-    // If the two elements are connected already, don't
-    // connect them again (this is application-specific though).
-    if (
-      elementBelow &&
-      graph.getNeighbors(elementBelow).indexOf(elementAbove) === -1
-    ) {
-      // Move the element to the position before dragging.
-      const { x, y } = evt.data.startPosition;
-      elementAbove.position(x, y);
-
-      // Create a connection between elements.
-      link = new joint.dia.Link({
-        source: { id: elementAbove.id },
-        target: { id: elementBelow.id },
-        attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
-      });
-      links.push(link);
-      link.addTo(graph);
-
-      // Add remove button to the link.
-      var tools = new joint.dia.ToolsView({
-        tools: [new joint.linkTools.Vertices(), new joint.linkTools.Remove()],
-      });
-      link.findView(this).addTools(tools);
-    }
-
-    if (
-      elementBelow &&
-      graph.isNeighbor(elementBelow, elementAbove, { deep: true })
-    ) {
-      const { x, y } = evt.data.startPosition;
-      elementAbove.position(x, y);
-    }
-  },
-});
-
-async function diagramToCode() {
-  // get all the guards and put them in the heads of the 2D array (divided)
-  let sentString = "";
-  let elementsTemp = createdElements;
-  for (let i = 0; i < elementsTemp.length; i++) {
-    let element = elementsTemp[i];
-    if (element.attr("body/type") == "guard") {
-      divided.push([element]);
-      //let indx = elementsTemp.indexOf(element);
-    }
-  }
-
-  //divide the connected shapes in a 2D array (divided)
-  for (let i = 0; i < divided.length; i++) {
-    let guard2 = divided[i][0];
-    for (let j = 0; j < createdElements.length; j++) {
-      let element = createdElements[j];
-      for (let k = 0; k < links.length; k++) {
-        let link = links[k];
-        if ((link.prop('source/id') == guard2.id && link.prop('target/id') == element.id) ||
-          (link.prop('source/id') == element.id && link.prop('target/id') == guard2.id)) {
-          divided[i].push(element);
+          if (element.id == elementAbove.id) {
+            countAbove = i;
+          }
+          if (element.id == elementBelow.id) {
+            countBelow = i;
+          }
         }
       }
+      // console.log("3\n");
+      // printDivided();
+      // Both in groups.
+      if (countAbove != -1 && countBelow != -1 && countAbove != countBelow) {
+        // Adding the source group to the target group and deleting the main source group.
+        divided[countBelow] = divided[countBelow].concat(divided[countAbove]);
+        divided.splice(1, countAbove);
+      }
+      // console.log("4\n");
+      // printDivided();
+      // Only the target is in a group.
+      if (countAbove == -1 && countBelow != -1) {
+        divided[countBelow].push(elementAbove);
+      }
+      // console.log("5\n");
+      // printDivided();
+      // Only the source is in a group.
+      if (countAbove != -1 && countBelow == -1) {
+        divided[countAbove].push(elementBelow);
+      }
+      // console.log("6\n");
+      // printDivided();
+      // Neither are in groups.
+      if (countAbove == -1 && countBelow == -1) {
+        divided.push([elementAbove, elementBelow]);
+      }
+      // console.log("7\n");
+      // printDivided();
+    }
+
+    if (
+      elementBelow &&
+      graph.isNeighbor(elementBelow, elementAbove, { deep: true })
+    ) {
+      const { x, y } = evt.data.startPosition;
+      elementAbove.position(x, y);
+    }
+  },
+
+});
+
+document.getElementById("diagram_code").addEventListener("click", diagramToCode);
+async function diagramToCode() {
+  // Puting the facts in divided.
+  for (let i = 0; i < createdElements.length; i++) {
+    const element = createdElements[i];
+    let found = false;
+    for (let j = 0; j < divided.length; j++) {
+      for (let k = 0; k < divided[j].length; k++) {
+        const element2 = divided[j][k];
+        if (element.id == element2.id)
+          found = true;
+      }
+    }
+    if (!found) {
+      divided.push([element]);
     }
   }
 
+  let sentString = "";
   //divide the connected shapes in a string (divide)
   for (let i = 0; i < divided.length; i++) {
     let elements = divided[i];
@@ -332,29 +321,14 @@ async function diagramToCode() {
       let shapeType = element.attr("body/type");
       let shapeText = element.attr("label/text");
       sentString += shapeType + "," + shapeText
-      if (i != createdElements.length - 1)
+      if (j != elements.length - 1)
         sentString += ".";
     }
     if (i != divided.length - 1)
       sentString += "é";
   }
 
-  // Printing divided.
-  let log = "";
-  for (let i = 0; i < divided.length; i++) {
-    const element = divided[i];
-    log += "[";
-    for (let j = 0; j < element.length; j++) {
-      const subElement = element[j];
-      log += subElement.attr("label/text");
-      if (i != subElement.length - 1)
-        log += ", ";
-    }
-    log += "]";
-    if (i != element.length - 1)
-      log += ", ";
-  }
-  console.log("divided: \n" + log);
+  printDivided();
 
   let code = await axios({
     method: "POST",
@@ -365,31 +339,39 @@ async function diagramToCode() {
 
 }
 
+document.getElementById("code_diagram").addEventListener("click", codeToDiagram);
 async function codeToDiagram() {
   let res = await axios({
     method: "POST",
     url: "http://localhost:5000/process/codeToDiagram",
     data: { codeString: document.getElementById("myCode").value }
   });
-  let diagrams = res.data;
-  console.log(diagrams);
-  let kHeads = diagrams[0].split("-");
-  let rHeads = diagrams[1].split("-");
-  let Guards = diagrams[2].split("-");
-  let Bodies = diagrams[3].split("-");
 
-  for (let i = 0; i < Guards.length; i++) {
+  let diagrams = res.data; // [ "color(X), color(Y)-color(brown)", "Null-color(_)", "mix(X,Y,Z)-Null", "color(Z)-true" ]
+  let kHeads = diagrams[0].split("-"); // [ "color(X), color(Y)", "color(brown)" ]
+  let rHeads = diagrams[1].split("-"); // [ "Null", "color(_)" ]
+  let Guards = diagrams[2].split("-"); // [ "mix(X,Y,Z)", "Null" ]
+  let Bodies = diagrams[3].split("-"); // [ "color(Z)", "true" ]
+  let facts = diagrams[4].split("-");
+  console.log("Diagrams: ", diagrams, "\nKept: ", kHeads, "\nRemoved: ", rHeads, "\nGuard: ", Guards, "\nBody: ", Bodies, "\nFact: ", facts);
+  let max = Math.max(kHeads.length, rHeads.length, Guards.length, Bodies.length)
+  for (let i = 0; i < max; i++) {
+    // Elements.
     let createdHead = "";
     let createdGuard = "";
     let createdRemovedHead = "";
     let createdBody = "";
-    let keptHead = kHeads[i];
-    let removedHead = rHeads[i];
+    let createdFact = "";
+    let linkedElement = "";
+    // Elements labels.
+    let keptHead = kHeads[i]; // With predicates.
+    let removedHead = rHeads[i]; // With predicates.
+    let keptHeadArr = []; // Without predicates.
+    let removedHeadArr = []; // Without predicates.
     let guard = Guards[i];
     let body = Bodies[i];
-    let keptHeadArr = [];
-    let removedHeadArr = [];
 
+    // If there's a guard create it and make it the linking element.
     if (guard.trim() != "Null") {
       createdGuard = new Polygon()
         .position(250, 250)
@@ -397,15 +379,14 @@ async function codeToDiagram() {
         .attr("label/text", guard)
         .addTo(graph);
       createdElements.push(createdGuard);
-    }
 
-    if (body.trim() != "Null") {
       createdBody = new Rectangle()
         .position(250, 250)
         .attr("label/text", body)
         .addTo(graph);
-
       createdElements.push(createdBody);
+      linkedElement = createdBody;
+
       let link = new joint.dia.Link({
         source: createdBody,
         target: createdGuard,
@@ -413,8 +394,20 @@ async function codeToDiagram() {
       });
       link.addTo(graph);
       links.push(link);
+      linkedElement = createdGuard;
     }
 
+    // If there's no Guard create the body and make it the linking element.
+    else if (body.trim() != "Null") {
+      createdBody = new Rectangle()
+        .position(250, 250)
+        .attr("label/text", body)
+        .addTo(graph);
+      createdElements.push(createdBody);
+      linkedElement = createdBody;
+    }
+
+    // Split the kept heads without splitting the parameters inside.
     let bracketOpen = false;
     for (let i = 0; i < keptHead.length; i++) {
       const chr = keptHead.charAt(i);
@@ -436,6 +429,7 @@ async function codeToDiagram() {
         keptHeadArr.push(keptHead);
     }
 
+    // Split the removed heads without splitting the parameters inside.
     bracketOpen = false;
     for (let i = 0; i < removedHead.length; i++) {
       const chr = removedHead.charAt(i);
@@ -457,6 +451,7 @@ async function codeToDiagram() {
         removedHeadArr.push(removedHead);
     }
 
+    // Create the kept heads.
     for (let j = 0; j < keptHeadArr.length; j++) {
       let kHeadName = keptHeadArr[j];
       if (kHeadName.trim() != "Null") {
@@ -471,7 +466,7 @@ async function codeToDiagram() {
         createdElements.push(createdHead);
         let link = new joint.dia.Link({
           source: createdHead,
-          target: createdGuard,
+          target: linkedElement,
           attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
         });
         link.addTo(graph);
@@ -479,6 +474,7 @@ async function codeToDiagram() {
       }
     }
 
+    // Create the removed heads.
     for (let j = 0; j < removedHeadArr.length; j++) {
       let rHeadName = removedHeadArr[j];
       if (rHeadName.trim() != "Null") {
@@ -494,23 +490,36 @@ async function codeToDiagram() {
 
         let link = new joint.dia.Link({
           source: createdRemovedHead,
-          target: createdGuard,
+          target: linkedElement,
           attrs: { ".connection": { "stroke-width": 3, stroke: "#000000" } },
         });
         link.addTo(graph);
         links.push(link);
       }
     }
-    // <Layout
-    var graphBBox = joint.layout.DirectedGraph.layout(graph, {
-      dagre: dagre,
-      graphlib: graphlib,
-      nodeSep: 80,
-      edgeSep: 140,
-      rankDir: "LR"
-    });
-    // Layout/>
   }
+  // Create the facts.
+  for (let i = 0; i < facts.length; i++) {
+    let fact = facts[i];
+    createdFact = new Circle()
+      .position(250, 250)
+      .size(120, 50)
+      .attr("label/text", fact)
+      .attr("body/fill", "#177bec")
+      .attr("body/type", "kept")
+      .addTo(graph);
+
+    createdElements.push(createdFact);
+  }
+
+  // Arranging the elements in the graph using Directed graph layout.
+  var graphBBox = joint.layout.DirectedGraph.layout(graph, {
+    dagre: dagre,
+    graphlib: graphlib,
+    nodeSep: 80,
+    edgeSep: 140,
+    rankDir: "LR"
+  });
 }
 
 document.getElementById("runQuery").addEventListener("click", loadChr);
@@ -543,4 +552,25 @@ async function getChrRes() {
   });
   document.getElementById("resultArea").value = result.data;
 }
+
+function printDivided() {
+  let log = "";
+  log += "[";
+  for (let i = 0; i < divided.length; i++) {
+    const element = divided[i];
+    log += "[";
+    for (let j = 0; j < element.length; j++) {
+      const subElement = element[j];
+      log += subElement.attr("label/text");
+      if (j != element.length - 1)
+        log += ", ";
+    }
+    log += "]";
+    if (i != divided.length - 1)
+      log += ", ";
+  }
+  log += "]";
+  console.log("divided: \n" + log);
+}
+
 //browserify graph.js -o bundle.js

@@ -13,10 +13,10 @@
     <div id="mySidenav" class="sidenav">
 
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <a href="#" id="KH-button">Kept-Head</a>
-        <a href="#" id="RH-button">Removed-Head</a>
-        <a href="#" id="GR-button">Guard</a>
-        <a href="#" id="BD-button">Body</a>
+        <a href="#" id="KH_button">Kept-Head</a>
+        <a href="#" id="RH_button">Removed-Head</a>
+        <a href="#" id="GR_button">Guard</a>
+        <a href="#" id="BD_button">Body</a>
     </div>
 
     <div id="main">
@@ -24,19 +24,19 @@
             <h1>Visual Diagrammatic CHR</h1>
             <!-- buttons -->
             <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; open</span>
-            <span style="font-size:30px;cursor:pointer;padding-left: 800px;" id="diagram-code">&#9658; Run</span>
+            <span style="font-size:30px;cursor:pointer;padding-left: 800px;" id="diagram_code">&#9658; Run</span>
             <span style="font-size:30px;cursor:pointer; margin-left: 180px;" id="code_diagram">&#9658; Turn to a
                 diagram</span>
-            <input type="file" id="real-file" hidden="hidden" />
-            <button type="button" id="custom-button">CHOOSE A FILE</button>
-            <span id="custom-text">No file chosen.</span>
+            <input type="file" id="real_file" hidden="hidden" />
+            <button type="button" id="custom_button">CHOOSE A FILE</button>
+            <span id="custom_text">No file chosen.</span>
             <button id="runQuery">RUN!</button>
         </div>
 
         <script>
-            const realFileBtn = document.getElementById("real-file");
-            const customBtn = document.getElementById("custom-button");
-            const customTxt = document.getElementById("custom-text");
+            const realFileBtn = document.getElementById("real_file");
+            const customBtn = document.getElementById("custom_button");
+            const customTxt = document.getElementById("custom_text");
 
             customBtn.addEventListener("click", function () {
                 realFileBtn.click();
