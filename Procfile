@@ -1,1 +1,1 @@
-web:    /app/diagrammatic-chr
+web:    /app/swipl-heroku
