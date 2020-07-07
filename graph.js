@@ -332,7 +332,7 @@ async function diagramToCode() {
 
   let code = await axios({
     method: "POST",
-    url: "http://localhost:5000/process/diagramToCode",
+    url: "/process/diagramToCode",
     data: { sentString: sentString }
   })
   console.log("before assigning value to text area");
