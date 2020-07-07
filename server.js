@@ -15,7 +15,7 @@ app.use(function (req, res, next) {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.get("/", async (req, res) => {
-    res.redirect("/page.html#");
+    res.redirect("/page.html");
 });
 app.use(express.static("."));
 app.use("/process", require("./page.js"));
