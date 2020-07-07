@@ -315,6 +315,7 @@ router.post('/loadChr', (req, res) => {
 // Execute query and save result in .txt file.
 router.post('/executeChr', (req, res) => {
   fs.writeFile('queryResult.txt', "The query is not executed try again", err => {
+    console.log("7amra");
     if (err) {
       console.error(err)
       return
