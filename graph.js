@@ -344,7 +344,7 @@ document.getElementById("code_diagram").addEventListener("click", codeToDiagram)
 async function codeToDiagram() {
   let res = await axios({
     method: "POST",
-    url: "http://localhost:5000/process/codeToDiagram",
+    url: "/process/codeToDiagram",
     data: { codeString: document.getElementById("myCode").value }
   });
 
@@ -527,7 +527,7 @@ document.getElementById("runQuery").addEventListener("click", loadChr);
 async function loadChr() {
   await axios({
     method: "POST",
-    url: "http://localhost:5000/process/loadCHR",
+    url: "/process/loadCHR",
     data: {
       code: document.getElementById("myCode").value
     }
@@ -538,7 +538,7 @@ async function loadChr() {
 async function executeChr() {
   await axios({
     method: "POST",
-    url: "http://localhost:5000/process/executeChr",
+    url: "/process/executeChr",
     data: {
       query: document.getElementById("queryArea").value
     }
@@ -549,7 +549,7 @@ async function executeChr() {
 async function getChrRes() {
   let result = await axios({
     method: "GET",
-    url: "http://localhost:5000/process/getChrRes",
+    url: "/process/getChrRes",
   });
   document.getElementById("resultArea").value = result.data;
 }
