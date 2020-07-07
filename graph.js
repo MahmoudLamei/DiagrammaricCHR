@@ -1,12 +1,12 @@
-const d3 = require("d3");
+// const d3 = require("d3");
 const graphlib = require("graphlib");
 const dagre = require("dagre");
 const axios = require("axios");
 const joint = require("jointjs")
-const lodash = require("lodash");
-const backbone = require("backbone");
-const jquery = require("jquery");
-const { countBy } = require("lodash");
+// const lodash = require("lodash");
+// const backbone = require("backbone");
+// const jquery = require("jquery");
+// const { countBy } = require("lodash");
 
 let createdElements = [];
 let links = [];
