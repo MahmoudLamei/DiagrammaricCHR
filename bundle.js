@@ -522,6 +522,7 @@ async function diagramToCode() {
     url: "http://localhost:5000/process/diagramToCode",
     data: { sentString: sentString }
   })
+  console.log("before assigning value to text area");
   document.getElementById("myCode").value = code.data;
 
 }
