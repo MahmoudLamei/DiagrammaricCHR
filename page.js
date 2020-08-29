@@ -337,7 +337,7 @@ router.post('/executeChr', (req, res) => {
     function (data) {
       var x = data.split("\n")
       data_line += data;
-      if (x.length > 1) {
+      if (x.length > 1 && x[x.length - 1] === '') {
 
         fs.writeFile('queryResult.txt', data_line, function (err, data) {
           if (err) {
